@@ -1,6 +1,6 @@
 {
   "name": "vite-plugin-knip-ui",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "packageManager": "pnpm@9.15.0",
   "description": "Visualize Knip dead code analysis in Vite DevTools",
   "author": "kuttyhub <nishanthsundaraj@outlook.com>",
