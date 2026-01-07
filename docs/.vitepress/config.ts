@@ -15,6 +15,7 @@ export default defineConfig({
       {
         text: 'Links',
         items: [
+          { text: 'npm', link: 'https://www.npmjs.com/package/vite-plugin-knip-ui' },
           { text: 'Knip', link: 'https://knip.dev' },
           { text: 'Vite', link: 'https://vitejs.dev' },
         ],
@@ -45,7 +46,10 @@ export default defineConfig({
       ],
     },
 
-    socialLinks: [{ icon: 'github', link: 'https://github.com/kuttyhub/vite-plugin-knip-ui' }],
+    socialLinks: [
+      { icon: 'github', link: 'https://github.com/kuttyhub/vite-plugin-knip-ui' },
+      { icon: 'npm', link: 'https://www.npmjs.com/package/vite-plugin-knip-ui' },
+    ],
 
     editLink: {
       pattern: 'https://github.com/kuttyhub/vite-plugin-knip-ui/edit/main/docs/:path',

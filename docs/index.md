@@ -16,6 +16,9 @@ hero:
     - theme: alt
       text: View on GitHub
       link: https://github.com/kuttyhub/vite-plugin-knip-ui
+    - theme: alt
+      text: npm
+      link: https://www.npmjs.com/package/vite-plugin-knip-ui
 
 features:
   - icon: 🔍
