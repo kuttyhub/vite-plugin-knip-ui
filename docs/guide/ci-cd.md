@@ -41,7 +41,7 @@ jobs:
           cache: pnpm
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
       - name: Build
         run: pnpm build
@@ -150,7 +150,7 @@ npx knip --no-progress
 knip:
   stage: test
   script:
-    - pnpm install
+    - pnpm install --frozen-lockfile
     - pnpm lint:knip
 ```
 
