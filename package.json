@@ -1,0 +1,101 @@
+{
+  "name": "vite-plugin-knip-ui",
+  "version": "0.0.1",
+  "description": "Visualize Knip dead code analysis in Vite DevTools",
+  "author": "kuttyhub <nishanthsundaraj@outlook.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kuttyhub/vite-plugin-knip-ui.git"
+  },
+  "homepage": "https://github.com/kuttyhub/vite-plugin-knip-ui#readme",
+  "bugs": {
+    "url": "https://github.com/kuttyhub/vite-plugin-knip-ui/issues"
+  },
+  "type": "module",
+  "main": "./dist/node/index.cjs",
+  "module": "./dist/node/index.mjs",
+  "types": "./dist/node/index.d.mts",
+  "exports": {
+    ".": {
+      "types": "./dist/node/index.d.mts",
+      "import": "./dist/node/index.mjs",
+      "require": "./dist/node/index.cjs"
+    },
+    "./client": "./dist/client/index.html"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "tsdown --watch",
+    "build": "pnpm build:node && pnpm build:client",
+    "build:node": "tsdown",
+    "build:client": "vite build --config src/client/vite.config.ts src/client",
+    "typecheck": "tsc --noEmit",
+    "lint:knip": "knip",
+    "lint:knip:ci": "knip --no-exit-code",
+    "prepare": "pnpm build",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs"
+  },
+  "peerDependencies": {
+    "vite": "^5.0.0 || ^6.0.0 || ^7.0.0"
+  },
+  "dependencies": {
+    "birpc": "^4.0.0",
+    "execa": "^9.6.1",
+    "launch-editor": "^2.12.0",
+    "ws": "^8.19.0"
+  },
+  "devDependencies": {
+    "@codemirror/lang-css": "catalog:",
+    "knip": "catalog:",
+    "@codemirror/lang-html": "catalog:",
+    "@codemirror/lang-javascript": "catalog:",
+    "@codemirror/lang-json": "catalog:",
+    "@codemirror/language": "catalog:",
+    "@codemirror/state": "catalog:",
+    "@codemirror/theme-one-dark": "catalog:",
+    "@codemirror/view": "catalog:",
+    "@eslint/js": "^9.39.2",
+    "@iconify-json/carbon": "^1.2.15",
+    "@iconify-json/ic": "^1.2.4",
+    "@iconify-json/mdi": "^1.2.3",
+    "@tanstack/vue-virtual": "catalog:",
+    "@types/node": "catalog:",
+    "@types/ws": "catalog:",
+    "@unocss/preset-wind3": "^66.5.12",
+    "@unocss/reset": "catalog:",
+    "@vitejs/plugin-vue": "catalog:",
+    "@vue/devtools-ui": "catalog:",
+    "codemirror": "catalog:",
+    "eslint": "^9.39.2",
+    "eslint-plugin-vue": "^10.6.2",
+    "floating-vue": "catalog:",
+    "globals": "^17.0.0",
+    "lint-staged": "^16.2.7",
+    "lottie-web": "^5.13.0",
+    "prettier": "^3.7.4",
+    "splitpanes": "catalog:",
+    "tsdown": "catalog:",
+    "typescript": "catalog:",
+    "typescript-eslint": "^8.52.0",
+    "unocss": "catalog:",
+    "vite": "catalog:",
+    "vitepress": "catalog:",
+    "vue": "catalog:"
+  },
+  "keywords": [
+    "vite",
+    "vite-plugin",
+    "knip",
+    "dead-code",
+    "devtools"
+  ],
+  "license": "MIT",
+  "lint-staged": {
+    "*.{ts,vue,js,json,css,html,md,mdx}": "prettier --write",
+    "*.{ts,vue,js}": "eslint --fix"
+  }
+}
