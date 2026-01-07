@@ -8,7 +8,9 @@ Visualize [Knip](https://knip.dev) dead code analysis results in your Vite dev s
 
 📖 **[Documentation](https://kuttyhub.github.io/vite-plugin-knip-ui/)**
 
-![Screenshot](docs/screenshot.png)
+<p align="center"></p>
+  <img alt="Knip UI - Light Theme" src="docs/public/screenshot.png" width="100%" style="object-fit: cover; border-radius: 12px;">
+</p>
 
 ## Features
 

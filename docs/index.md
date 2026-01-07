@@ -8,6 +8,7 @@ hero:
   image:
     src: /screenshot.png
     alt: Knip UI Screenshot
+    style: 'max-width: 720px; width: 100%; min-height: 420px; object-fit: cover; border-radius: 12px;'
   actions:
     - theme: brand
       text: Get Started
