@@ -1,5 +1,3 @@
-import type { KnipResult } from '../../node/types'
-
 // Define categories as const array for runtime + type derivation
 export const ISSUE_CATEGORIES = [
   'files',
@@ -17,11 +15,6 @@ export const ISSUE_CATEGORIES = [
 
 // Derive type from const array
 export type IssueCategory = (typeof ISSUE_CATEGORIES)[number]
-
-// Derive Counts from KnipResult - maps each key to number
-export type IssueCounts = {
-  [K in keyof KnipResult]: number
-}
 
 // Category colors for UI badges and highlights
 export const CATEGORY_COLORS: Record<IssueCategory, string> = {

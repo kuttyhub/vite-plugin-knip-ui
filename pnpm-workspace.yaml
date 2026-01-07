@@ -30,12 +30,6 @@ catalog:
   splitpanes: ^4.0.4
   unocss: ^66.5.12
 
-  # Runtime dependencies
-  birpc: ^4.0.0
-  execa: ^9.6.1
-  launch-editor: ^2.12.0
-  ws: ^8.19.0
-
   # Types
   '@types/node': ^25.0.3
   '@types/ws': ^8.18.1

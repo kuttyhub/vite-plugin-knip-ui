@@ -1,6 +1,12 @@
 {
   "$schema": "https://unpkg.com/knip@latest/schema.json",
-  "entry": ["src/node/index.ts", "src/client/main.ts"],
-  "project": ["src/**/*.{ts,vue}"],
-  "ignore": ["playground/**", "dist/**"]
+  "workspaces": {
+    ".": {
+      "entry": ["src/client/main.ts", "src/client/uno.config.ts"],
+      "project": ["src/**/*.{ts,vue}"],
+      "ignoreDependencies": ["uno.css", "codemirror", "lint-staged"]
+    }
+  },
+  "ignoreWorkspaces": ["playground"],
+  "ignore": ["dist/**"]
 }
