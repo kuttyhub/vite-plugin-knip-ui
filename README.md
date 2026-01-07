@@ -22,7 +22,7 @@ Visualize [Knip](https://knip.dev) dead code analysis results in your Vite dev s
 ## Installation
 
 ```bash
-pnpm add -D vite-plugin-knip-ui knip
+pnpm add -D vite-plugin-knip-ui
 ```
 
 ## Usage

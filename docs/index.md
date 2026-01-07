@@ -40,7 +40,7 @@ features:
 ## Quick Start
 
 ```bash
-pnpm add -D vite-plugin-knip-ui knip
+pnpm add -D vite-plugin-knip-ui
 ```
 
 ```ts
