@@ -4,6 +4,7 @@ import { Splitpanes, Pane } from 'splitpanes'
 import 'splitpanes/dist/splitpanes.css'
 import { useKnipRpc } from './composables/useKnipRpc'
 import { useFileTree, type IssueCategory, type IssueItem } from './composables/useFileTree'
+import { useDebouncedRef } from './composables/useDebouncedRef'
 import { ISSUE_CATEGORIES } from './constants/categories'
 import Sidebar from './components/Sidebar.vue'
 import Toolbar from './components/Toolbar.vue'
@@ -27,11 +28,12 @@ const {
 } = useKnipRpc()
 
 const search = ref('')
+const debouncedSearch = useDebouncedRef(search, 250)
 const isDarkTheme = ref(true)
 
 const activeFilters = ref<Set<IssueCategory>>(new Set(ISSUE_CATEGORIES))
 
-const { categoryGroups, totalIssues } = useFileTree(results, activeFilters, search)
+const { categoryGroups, totalIssues } = useFileTree(results, activeFilters, debouncedSearch)
 
 const selectedIssue = ref<IssueItem | null>(null)
 const selectedId = computed(() => selectedIssue.value?.id ?? null)

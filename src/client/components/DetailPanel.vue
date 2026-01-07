@@ -26,7 +26,11 @@ const editorContainer = ref<HTMLElement | null>(null)
 const editorView = shallowRef<EditorView | null>(null)
 const fileContent = ref<string | null>(null)
 const isLoadingCode = ref(false)
+const currentFile = ref<string | null>(null)
+
+// Compartments for dynamic reconfiguration (avoids editor recreation)
 const themeCompartment = new Compartment()
+const languageCompartment = new Compartment()
 
 const badgeLabel = computed(() => {
   if (!props.issue) return ''
@@ -98,13 +102,9 @@ const lightThemeStyles = EditorView.theme({
 
 const lightTheme = [lightThemeStyles, syntaxHighlighting(defaultHighlightStyle, { fallback: true })]
 
-function createEditor(content: string, filename: string, highlightLine: number) {
+// Create editor once, reuse it for subsequent file changes
+function createEditor(content: string, filename: string) {
   if (!editorContainer.value) return
-
-  if (editorView.value) {
-    editorView.value.destroy()
-    editorView.value = null
-  }
 
   const extensions = [
     lineNumbers({
@@ -112,14 +112,11 @@ function createEditor(content: string, filename: string, highlightLine: number) 
     }),
     EditorView.editable.of(false),
     EditorState.readOnly.of(true),
-    getLanguageExtension(filename),
+    languageCompartment.of(getLanguageExtension(filename)),
     themeCompartment.of(props.isDark ? oneDark : lightTheme),
     EditorView.lineWrapping,
+    highlightActiveLine(),
   ]
-
-  if (highlightLine > 0) {
-    extensions.push(highlightActiveLine())
-  }
 
   const state = EditorState.create({
     doc: content,
@@ -129,6 +126,19 @@ function createEditor(content: string, filename: string, highlightLine: number) 
   editorView.value = new EditorView({
     state,
     parent: editorContainer.value,
+  })
+}
+
+// Scroll to and highlight a specific line (used when navigating within same file)
+function scrollToLine(highlightLine: number) {
+  if (!editorView.value) return
+
+  // Clear previous highlight classes
+  editorContainer.value?.querySelectorAll('.cm-highlightedLine').forEach((el) => {
+    el.classList.remove('cm-highlightedLine')
+  })
+  editorContainer.value?.querySelectorAll('.cm-highlightedLineGutter').forEach((el) => {
+    el.classList.remove('cm-highlightedLineGutter')
   })
 
   if (highlightLine > 0) {
@@ -152,7 +162,11 @@ function createEditor(content: string, filename: string, highlightLine: number) 
           gutterElements[highlightLine].classList.add('cm-highlightedLineGutter')
         }
       }
-    }, 50)
+    }, 20)
+  } else {
+    editorView.value.dispatch({
+      effects: EditorView.scrollIntoView(0),
+    })
   }
 }
 
@@ -172,22 +186,21 @@ watch(
   async (newIssue) => {
     if (!newIssue) {
       fileContent.value = null
-      if (editorView.value) {
-        editorView.value.destroy()
-        editorView.value = null
-      }
+      currentFile.value = null
       return
-    }
-
-    if (editorView.value) {
-      editorView.value.destroy()
-      editorView.value = null
     }
 
     // Only load file content if we have a file path
     if (!newIssue.file) {
       fileContent.value = null
+      currentFile.value = null
       isLoadingCode.value = false
+      return
+    }
+
+    // If same file and editor exists, just scroll to the new line
+    if (currentFile.value === newIssue.file && fileContent.value && editorView.value) {
+      scrollToLine(newIssue.line ?? 0)
       return
     }
 
@@ -195,17 +208,28 @@ watch(
     try {
       const content = await props.getFileContent(newIssue.file)
       fileContent.value = content
+      currentFile.value = newIssue.file
       isLoadingCode.value = false
 
       if (content) {
         await nextTick()
+
+        // Destroy old editor if it exists (DOM may have changed)
+        if (editorView.value) {
+          editorView.value.destroy()
+          editorView.value = null
+        }
+
+        // Create fresh editor for new file
         if (editorContainer.value) {
-          createEditor(content, newIssue.file, newIssue.line ?? 0)
+          createEditor(content, newIssue.file)
+          scrollToLine(newIssue.line ?? 0)
         }
       }
     } catch (err) {
       console.error('[knip-ui] Error loading file content:', err)
       fileContent.value = null
+      currentFile.value = null
       isLoadingCode.value = false
     }
   },

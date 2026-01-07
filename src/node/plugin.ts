@@ -60,54 +60,62 @@ export default function knipUi(options: KnipUiOptions = {}): Plugin {
   }
 
   function exportToCsv(results: KnipResult): string {
-    const rows: string[] = []
-    rows.push('Category,File,Name,Line,Column,Specifier')
+    // Use string concatenation for better memory efficiency with large exports
+    let csv = 'Category,File,Name,Line,Column,Specifier\n'
 
     for (const file of results.files) {
-      rows.push(`files,"${file}",,,,`)
+      csv += `files,"${escapeCsvField(file)}",,,,\n`
     }
 
     for (const exp of results.exports) {
-      rows.push(`exports,"${exp.file}","${exp.name}",${exp.line},${exp.col},`)
+      csv += `exports,"${escapeCsvField(exp.file)}","${escapeCsvField(exp.name)}",${exp.line},${exp.col},\n`
     }
 
     for (const typ of results.types) {
-      rows.push(`types,"${typ.file}","${typ.name}",${typ.line},${typ.col},`)
+      csv += `types,"${escapeCsvField(typ.file)}","${escapeCsvField(typ.name)}",${typ.line},${typ.col},\n`
     }
 
     for (const dep of results.dependencies) {
-      rows.push(`dependencies,,"${dep}",,,,`)
+      csv += `dependencies,package.json,"${escapeCsvField(dep.name)}",${dep.line ?? ''},${dep.col ?? ''},\n`
     }
 
     for (const dep of results.devDependencies) {
-      rows.push(`devDependencies,,"${dep}",,,,`)
+      csv += `devDependencies,package.json,"${escapeCsvField(dep.name)}",${dep.line ?? ''},${dep.col ?? ''},\n`
     }
 
     for (const item of results.unlisted) {
-      rows.push(`unlisted,"${item.file}",,,,${item.specifier}`)
+      csv += `unlisted,"${escapeCsvField(item.file)}",,,,${escapeCsvField(item.specifier)}\n`
     }
 
     for (const item of results.binaries) {
-      rows.push(`binaries,"${item.file}","${item.name}",,,`)
+      csv += `binaries,"${escapeCsvField(item.file)}","${escapeCsvField(item.name)}",,,\n`
     }
 
     for (const item of results.unresolved) {
-      rows.push(`unresolved,"${item.file}",,,,${item.specifier}`)
+      csv += `unresolved,"${escapeCsvField(item.file)}",,,,${escapeCsvField(item.specifier)}\n`
     }
 
     for (const item of results.duplicates) {
-      rows.push(`duplicates,"${item.file}","${item.name}",,,`)
+      csv += `duplicates,"${escapeCsvField(item.file)}","${escapeCsvField(item.name)}",,,\n`
     }
 
     for (const em of results.enumMembers) {
-      rows.push(`enumMembers,"${em.file}","${em.name}",${em.line},${em.col},`)
+      csv += `enumMembers,"${escapeCsvField(em.file)}","${escapeCsvField(em.name)}",${em.line},${em.col},\n`
     }
 
     for (const cm of results.classMembers) {
-      rows.push(`classMembers,"${cm.file}","${cm.name}",${cm.line},${cm.col},`)
+      csv += `classMembers,"${escapeCsvField(cm.file)}","${escapeCsvField(cm.name)}",${cm.line},${cm.col},\n`
     }
 
-    return rows.join('\n')
+    return csv
+  }
+
+  // Escape CSV field values to handle quotes and special characters
+  function escapeCsvField(value: string): string {
+    if (value.includes('"') || value.includes(',') || value.includes('\n')) {
+      return value.replace(/"/g, '""')
+    }
+    return value
   }
 
   return {

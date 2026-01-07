@@ -1,8 +1,20 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
+import { useVirtualizer } from '@tanstack/vue-virtual'
 import { VueIcon, VueButton, VueLoadingIndicator } from '@vue/devtools-ui'
 import type { CategoryGroup, IssueItem, IssueCategory } from '../composables/useFileTree'
 import { CATEGORY_COLORS, CATEGORY_ICONS } from '../constants/categories'
+
+// Row types for flattened virtual list
+type VirtualRowHeader = {
+  type: 'header'
+  group: CategoryGroup
+}
+type VirtualRowItem = {
+  type: 'item'
+  item: IssueItem
+}
+type VirtualRow = VirtualRowHeader | VirtualRowItem
 
 const props = defineProps<{
   categoryGroups: CategoryGroup[]
@@ -18,19 +30,48 @@ const emit = defineEmits<{
 }>()
 
 const expandedCategories = ref<Set<IssueCategory>>(new Set())
+const listContainerRef = ref<HTMLElement | null>(null)
 
-// Auto-expand categories with issues
+// Auto-expand first category only (performance: don't expand all by default)
 watch(
   () => props.categoryGroups,
   (groups) => {
-    for (const group of groups) {
-      if (group.count > 0) {
-        expandedCategories.value.add(group.category)
-      }
+    if (expandedCategories.value.size === 0 && groups.length > 0) {
+      expandedCategories.value.add(groups[0].category)
     }
   },
   { immediate: true }
 )
+
+// Flatten categories and items into a single list for virtualization
+const flattenedRows = computed<VirtualRow[]>(() => {
+  const rows: VirtualRow[] = []
+  for (const group of props.categoryGroups) {
+    rows.push({ type: 'header', group })
+    if (expandedCategories.value.has(group.category)) {
+      for (const item of group.items) {
+        rows.push({ type: 'item', item })
+      }
+    }
+  }
+  return rows
+})
+
+// Virtual scrolling with @tanstack/vue-virtual
+const virtualizer = useVirtualizer({
+  get count() {
+    return flattenedRows.value.length
+  },
+  getScrollElement: () => listContainerRef.value,
+  estimateSize: (index) => {
+    // Headers are taller than items
+    return flattenedRows.value[index]?.type === 'header' ? 36 : 42
+  },
+  overscan: 10,
+})
+
+const virtualRows = computed(() => virtualizer.value.getVirtualItems())
+const totalSize = computed(() => virtualizer.value.getTotalSize())
 
 function toggleCategory(category: IssueCategory) {
   if (expandedCategories.value.has(category)) {
@@ -42,15 +83,12 @@ function toggleCategory(category: IssueCategory) {
 }
 
 function getDisplayName(item: IssueItem): string {
-  // For files, show just the filename
   if (item.file && !item.name) {
     return item.file.split('/').pop() || item.file
   }
-  // For exports/types with name
   if (item.name) {
     return item.name
   }
-  // For specifiers (unlisted/unresolved)
   if (item.specifier) {
     return item.specifier
   }
@@ -58,11 +96,9 @@ function getDisplayName(item: IssueItem): string {
 }
 
 function getSubtext(item: IssueItem): string | null {
-  // For dependencies (no file, just name)
   if (item.category === 'dependencies' || item.category === 'devDependencies') {
     return 'package.json'
   }
-  // For files, show the directory path
   if (item.file && !item.name && !item.specifier) {
     const parts = item.file.split('/')
     if (parts.length > 1) {
@@ -70,11 +106,9 @@ function getSubtext(item: IssueItem): string | null {
     }
     return null
   }
-  // For exports/types, show file path
   if (item.file && item.name) {
     return item.file
   }
-  // For specifiers, show file path
   if (item.file && item.specifier) {
     return item.file
   }
@@ -113,44 +147,94 @@ const totalIssues = computed(() => {
       <p class="state-text">No dead code found!</p>
     </div>
 
-    <!-- Flat List View -->
-    <div v-else class="list-container">
-      <div v-for="group in categoryGroups" :key="group.category" class="category-group">
-        <button type="button" class="category-header" @click="toggleCategory(group.category)">
-          <VueIcon
-            :icon="
-              expandedCategories.has(group.category)
-                ? 'i-carbon-chevron-down'
-                : 'i-carbon-chevron-right'
-            "
-            class="expand-icon"
-          />
-          <VueIcon :icon="CATEGORY_ICONS[group.category]" class="category-icon" />
-          <span class="category-label">{{ group.label }}</span>
-          <span
-            class="category-count"
-            :style="{ backgroundColor: CATEGORY_COLORS[group.category] }"
-          >
-            {{ group.count }}
-          </span>
-        </button>
-
-        <div v-if="expandedCategories.has(group.category)" class="category-items">
+    <!-- Virtualized List View -->
+    <div v-else ref="listContainerRef" class="list-container">
+      <div class="virtual-list" :style="{ height: `${totalSize}px` }">
+        <template v-for="virtualRow in virtualRows" :key="virtualRow.key">
+          <!-- Category Header -->
           <button
-            v-for="item in group.items"
-            :key="item.id"
+            v-if="flattenedRows[virtualRow.index].type === 'header'"
+            type="button"
+            class="category-header"
+            :style="{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              transform: `translateY(${virtualRow.start}px)`,
+            }"
+            @click="
+              toggleCategory((flattenedRows[virtualRow.index] as VirtualRowHeader).group.category)
+            "
+          >
+            <VueIcon
+              :icon="
+                expandedCategories.has(
+                  (flattenedRows[virtualRow.index] as VirtualRowHeader).group.category
+                )
+                  ? 'i-carbon-chevron-down'
+                  : 'i-carbon-chevron-right'
+              "
+              class="expand-icon"
+            />
+            <VueIcon
+              :icon="
+                CATEGORY_ICONS[(flattenedRows[virtualRow.index] as VirtualRowHeader).group.category]
+              "
+              class="category-icon"
+            />
+            <span class="category-label">{{
+              (flattenedRows[virtualRow.index] as VirtualRowHeader).group.label
+            }}</span>
+            <span
+              class="category-count"
+              :style="{
+                backgroundColor:
+                  CATEGORY_COLORS[
+                    (flattenedRows[virtualRow.index] as VirtualRowHeader).group.category
+                  ],
+              }"
+            >
+              {{ (flattenedRows[virtualRow.index] as VirtualRowHeader).group.count }}
+            </span>
+          </button>
+
+          <!-- Issue Item -->
+          <button
+            v-else
             type="button"
             class="item-row"
-            :class="{ selected: selectedId === item.id }"
-            @click="emit('select', item)"
+            :class="{
+              selected: selectedId === (flattenedRows[virtualRow.index] as VirtualRowItem).item.id,
+            }"
+            :style="{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              transform: `translateY(${virtualRow.start}px)`,
+            }"
+            @click="emit('select', (flattenedRows[virtualRow.index] as VirtualRowItem).item)"
           >
             <div class="item-content">
-              <span class="item-name">{{ getDisplayName(item) }}</span>
-              <span v-if="getSubtext(item)" class="item-subtext">{{ getSubtext(item) }}</span>
+              <span class="item-name">{{
+                getDisplayName((flattenedRows[virtualRow.index] as VirtualRowItem).item)
+              }}</span>
+              <span
+                v-if="getSubtext((flattenedRows[virtualRow.index] as VirtualRowItem).item)"
+                class="item-subtext"
+              >
+                {{ getSubtext((flattenedRows[virtualRow.index] as VirtualRowItem).item) }}
+              </span>
             </div>
-            <span v-if="item.line" class="item-line">:{{ item.line }}</span>
+            <span
+              v-if="(flattenedRows[virtualRow.index] as VirtualRowItem).item.line"
+              class="item-line"
+            >
+              :{{ (flattenedRows[virtualRow.index] as VirtualRowItem).item.line }}
+            </span>
           </button>
-        </div>
+        </template>
       </div>
     </div>
   </aside>
@@ -207,8 +291,9 @@ const totalIssues = computed(() => {
   padding: 4px 0;
 }
 
-.category-group {
-  margin-bottom: 2px;
+.virtual-list {
+  position: relative;
+  width: 100%;
 }
 
 .category-header {
@@ -256,11 +341,6 @@ const totalIssues = computed(() => {
   color: white;
   min-width: 24px;
   text-align: center;
-}
-
-.category-items {
-  display: flex;
-  flex-direction: column;
 }
 
 .item-row {
