@@ -1,0 +1,21 @@
+{
+  "name": "playground",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint:knip": "knip --no-exit-code"
+  },
+  "dependencies": {
+    "vue": "catalog:",
+    "lodash": "^4.17.21"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "catalog:",
+    "knip": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vite-plugin-knip-ui": "workspace:*"
+  }
+}
