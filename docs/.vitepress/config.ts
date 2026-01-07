@@ -3,9 +3,8 @@ import { defineConfig } from 'vitepress'
 export default defineConfig({
   title: 'Vite Plugin Knip UI',
   description: 'Visualize Knip dead code analysis in your Vite dev server',
-  base: '/vite-plugin-knip-ui/',
 
-  head: [['link', { rel: 'icon', type: 'image/svg+xml', href: '/vite-plugin-knip-ui/logo.svg' }]],
+  head: [['link', { rel: 'icon', type: 'image/svg+xml', href: '/logo.svg' }]],
 
   themeConfig: {
     logo: '/logo.svg',

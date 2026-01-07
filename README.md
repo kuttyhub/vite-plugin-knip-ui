@@ -4,13 +4,9 @@
 [![CI](https://github.com/kuttyhub/vite-plugin-knip-ui/actions/workflows/ci.yml/badge.svg)](https://github.com/kuttyhub/vite-plugin-knip-ui/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Visualize [Knip](https://knip.dev) dead code analysis results in your Vite dev server.
+Visualize [Knip](https://knip.dev) dead code analysis results in your Vite dev server. check out the [docs](https://knip-ui.netlify.app) for more information
 
-📖 **[Documentation](https://kuttyhub.github.io/vite-plugin-knip-ui/)**
-
-<p align="center"></p>
-  <img alt="Knip UI - Light Theme" src="docs/public/screenshot.png" width="100%" style="object-fit: cover; border-radius: 12px;">
-</p>
+<img alt="Knip UI - Light Theme" src="docs/public/screenshot.png" width="100%" style="object-fit: cover; border-radius: 12px;">
 
 ## Features
 
